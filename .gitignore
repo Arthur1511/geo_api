@@ -1,0 +1,3 @@
+.flaskenv/
+.vscode/
+/backend/__pycache__

@@ -1,0 +1,19 @@
+ div .input-group {
+    display: inline;
+    justify-content: center;
+    align-items: center;
+}
+
+ div .input-group div .input-lat {
+    margin-left: 10pt;
+    display: inline;
+}
+
+ div .input-group div .input-long {
+    margin-left: 10pt;
+    display: inline;
+}
+
+div .input-group div .input-group button {
+    display: inline;
+}
