@@ -5,8 +5,8 @@ from sqlalchemy import text
 BLUEPRINT = Blueprint('busca', __name__)
 
 
-@BLUEPRINT.route('/busca/geocodificacao_reversa/<float:lat>/<float:long>', methods=['GET'])
-@BLUEPRINT.route('/busca/geocodificacao_reversa/<float:lat>/<float:long>/<int:srid>', methods=['GET'])
+@BLUEPRINT.route('/busca/lugares/geocodificacao_reversa/<float:lat>/<float:long>', methods=['GET'])
+@BLUEPRINT.route('/busca/lugares/geocodificacao_reversa/<float:lat>/<float:long>/<int:srid>', methods=['GET'])
 def geocodificacao_reversa(lat, long, srid=4674):
     # srid: 4674 = SIRGAS 2000, padrão usado pelo governo brasileiro
     # srid: 4626 = WGS84, mais usado fora do brasil, GPS
@@ -42,16 +42,37 @@ def geocodificacao_lugares(nome, srid=4674):
     db.close_db()
     return jsonify([dict(row) for row in locations])
 
+# busca de lugares, filtrando-os por estado para reduzir desambiguação
+# o estado pode ser informado por seu nome ou sua sigla, caso não haja um match, desconsidera o filtro
+@BLUEPRINT.route('/busca/lugares/<string:nome>/<string:estado>', methods=['GET'])
+@BLUEPRINT.route('/busca/lugares/<string:nome>/<string:estado>/<int:srid>', methods=['GET'])
+def geocodificacao_lugares_filtro(nome, estado, srid=4674):
+    conn = db.get_db()
+    locations = conn.execute(text("SELECT * FROM search_filtro_json(:nome, :estado)").bindparams(nome=nome, estado=estado))
+    db.close_db()
+    return jsonify([dict(row) for row in locations])
 
-# busca de endereços de forma estruturada
-@BLUEPRINT.route('/busca/lugares/<string:nome>/<string:numero>/<string:cidade>/<string:estado>', methods=['GET'])
-@BLUEPRINT.route('/busca/lugares/<string:nome>/<string:numero>/<string:cidade>/<string:estado>/<int:srid>', methods=['GET'])
+# busca de endereços de forma estruturada, nomes devem bater de forma exata
+@BLUEPRINT.route('/busca/enderecos/<string:nome>/<string:numero>/<string:cidade>/<string:estado>', methods=['GET'])
+@BLUEPRINT.route('/busca/enderecos/<string:nome>/<string:numero>/<string:cidade>/<string:estado>/<int:srid>', methods=['GET'])
 def geocodificacao_enderecos(nome, numero, cidade, estado, srid=4674):
-    pass
+    conn = db.get_db()
+    # equivalente a:
+    # SELECT * FROM search_addresses_json(:nome, :numero, :cidade, :estado, :srid)
+    locations = conn.execute(text("""SELECT * FROM search_addresses_json(:nome, :numero, :cidade, :estado, :srid)
+                                    """).bindparams(nome=nome, numero=numero, cidade=cidade, estado=estado, srid=srid))
+    db.close_db()
+    return jsonify([dict(row) for row in locations])
 
 
 # retorna endereços que possuem o cep informado
 @BLUEPRINT.route('/busca/enderecos/<string:cep>', methods=['GET'])
 @BLUEPRINT.route('/busca/enderecos/<string:cep>/<int:srid>', methods=['GET'])
 def geocodificacao_cep(cep, srid=4674):
-    pass
+    conn = db.get_db()
+    locations = conn.execute(text("""SELECT * FROM search_addresses_cep_json(:cep, :srid)
+                                    """).bindparams(cep=cep, srid=srid))
+    db.close_db()
+    return jsonify([dict(row) for row in locations])
+
+
