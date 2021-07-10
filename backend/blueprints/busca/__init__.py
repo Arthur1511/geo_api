@@ -7,7 +7,7 @@ BLUEPRINT = Blueprint('busca', __name__)
 
 @BLUEPRINT.route('/busca/lugares/geocodificacao_reversa/<float:lat>/<float:long>', methods=['GET'])
 @BLUEPRINT.route('/busca/lugares/geocodificacao_reversa/<float:lat>/<float:long>/<int:srid>', methods=['GET'])
-def geocodificacao_reversa(lat, long, srid=4674):
+def geocodificacao_reversa(lat, long, limite=10, srid=4674):
     # srid: 4674 = SIRGAS 2000, padrão usado pelo governo brasileiro
     # srid: 4626 = WGS84, mais usado fora do brasil, GPS
     conn = db.get_db()
@@ -28,8 +28,8 @@ def geocodificacao_reversa(lat, long, srid=4674):
                                 FROM geodata.name as n, geodata.place as p, geodata.place_name as pn
                                 WHERE p.place_id = pn.place_place_id and pn.name_name_id = n.name_id and n.is_alternative = false) AS loc
                             ORDER BY Distance ASC
-                            limit 100
-                                """).bindparams(latitude=lat, longitude=long,srid=srid))
+                            limit :limite
+                                """).bindparams(latitude=lat, longitude=long, limite=limite, srid=srid))
     db.close_db()
     return jsonify([dict(row) for row in locations])
 
@@ -76,3 +76,27 @@ def geocodificacao_cep(cep, srid=4674):
     return jsonify([dict(row) for row in locations])
 
 
+# busca não estruturada de endereços
+@BLUEPRINT.route('/busca/enderecos/<string:end>', methods=['GET'])
+@BLUEPRINT.route('/busca/enderecos/<string:end>/<int:srid>', methods=['GET'])
+def geocodificacao_cep(end, srid=4674):
+    conn = db.get_db()
+    locations = conn.execute(text("""SELECT *, ST_Transform(geom,:srid)::json FROM backup.parsing(:end)
+                                    """).bindparams(end=end, srid=srid))
+    db.close_db()
+    return jsonify([dict(row) for row in locations])
+
+
+@BLUEPRINT.route('/busca/enderecos/geocodificacao_reversa/<float:lat>/<float:long>', methods=['GET'])
+@BLUEPRINT.route('/busca/enderecos/geocodificacao_reversa/<float:lat>/<float:long>/<int:srid>', methods=['GET'])
+def geocodificacao_reversa(lat, long, limite=10, srid=4674):
+    conn = db.get_db()
+    locations = conn.execute(text("""SELECT *,ST_Transform(geom,:srid)::json,
+                                    ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:longitude, :latitude), :srid), 4674)::geography, 
+                                                geom::geography)/1000 AS Distance
+                            FROM geodata.endereco
+                            ORDER BY Distance ASC
+                            limit :limite
+                                """).bindparams(latitude=lat, longitude=long, limite=limite, srid=srid))
+    db.close_db()
+    return jsonify([dict(row) for row in locations])
