@@ -5,6 +5,7 @@ import './App.css';
 import PlaceGeocoding from './components/Pages/PlaceGeocoding';
 import AddressGeocoding from './components/Pages/AddressGeocoding';
 import ReverseGeocoding from './components/Pages/ReverseGeocoding';
+import AddressGeocodingByCEP from './components/Pages/AddressGeocodingByCEP'
 
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/address_geocoding" element={<AddressGeocoding />} />
             <Route path="/place_geocoding" element={<PlaceGeocoding />} />
             <Route path="/reverse_geocoding" element={<ReverseGeocoding />} />
+            <Route path="/address_geocoding_cep" element={<AddressGeocodingByCEP />} />
           </Routes>
         </BrowserRouter>
       </main>

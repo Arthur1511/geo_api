@@ -2,14 +2,14 @@ import Map from '../../../Map'
 import ApiClient from '../../../../clients/api'
 import { Component } from "react"
 
-class AddressGeocoding extends Component {
+class AddressGeocodingByCEP extends Component {
     constructor(props) {
         super(props)
         this.apiClient = new ApiClient()
         this.state = {
             locations: [],
-            address: "",
-            type: "Endereços",
+            cep: "",
+            type: "Endereços CEP",
             clickedLat: "",
             clickedLong: ""
         }
@@ -23,7 +23,7 @@ class AddressGeocoding extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await this.apiClient.getAddressGeocoding({ "end": this.setState.address });
+        const response = await this.apiClient.getAddressesByCEP({ "cep": this.state.cep });
         console.log('response', response)
         this.setState({ locations: response.data })
         this.setState({ address: this.currentAddress })
@@ -35,15 +35,15 @@ class AddressGeocoding extends Component {
                 <form name="form" onSubmit={this.handleSubmit}>
 
                     <div className="input-group">
-                        <div className="input-name">
+                        <div className="input-cep">
                             <input
                                 type="text"
-                                name="address"
-                                id="addressInput"
+                                name="cep"
+                                id="cepInput"
                                 required
-                                placeholder="Endereço"
-                                value={this.state.address}
-                                onChange={e => this.setState({ address: e.target.value })}
+                                placeholder="CEP"
+                                value={this.state.cep}
+                                onChange={e => this.setState({ cep: e.target.value })}
                             />
                         </div>
                     </div>
@@ -59,4 +59,4 @@ class AddressGeocoding extends Component {
     }
 }
 
-export default AddressGeocoding
+export default AddressGeocodingByCEP

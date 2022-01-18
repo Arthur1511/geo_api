@@ -71,13 +71,35 @@ class Map extends Component {
             marker.remove()
         })
         var bounds = new mapboxgl.LngLatBounds();
-        
+        console.log()
         switch (this.props.locations.type) {
             case "Endereços":
                 this.props.locations.response.forEach((end => {
                     bounds.extend(end.geom_json.coordinates)
                     const newMarker = new mapboxgl.Marker()
                         .setLngLat(end.geom_json.coordinates)
+                        .setPopup(
+                            new mapboxgl.Popup({ offset: 25 })
+                                .setHTML(
+                                    `<p><b>Id:</b> ${end.id}</p>
+                                    <p><b>Tipo Logradouro:</b> ${end.tipo_logra}</p>
+                                    <p><b>Nome do Logradouro:</b> ${end.nome_logra}</p>
+                                    <p><b>Número:</b> ${end.numero}</p>
+                                    <p><b>Bairro:</b> ${end.bairro || 'null'}</p>
+                                    <p><b>Cidade:</b> ${end.cidade}</p>
+                                    `
+                                )
+                        )
+                        .addTo(this.map.current)
+                    this.currentMarkers.push(newMarker)
+                }))
+
+                break
+            case "Endereços CEP":
+                this.props.locations.response.forEach((end => {
+                    bounds.extend(end.geom.coordinates)
+                    const newMarker = new mapboxgl.Marker()
+                        .setLngLat(end.geom.coordinates)
                         .setPopup(
                             new mapboxgl.Popup({ offset: 25 })
                                 .setHTML(

@@ -41,7 +41,7 @@ class ApiClient {
 
     async getPlaceGeocoding(config) {
         console.log('config', config)
-        const url = `/busca/lugares?nome=${config.nome}&srid=${SRID}`
+        const url = `/busca/lugares?nome=${config.nome}&estado=${config.estado || ''}&meso=${config.meso || ''}&srid=${SRID}`
         return this.instance.get(url)
         //return this.get(url, config)
     }
@@ -61,6 +61,22 @@ class ApiClient {
     async getAddressReverseGeocoding(config) {
         console.log('config', config)
         const url = `/busca/enderecos/geocodificacao_reversa?lat=${config.lat}&long=${config.long}&limite=${config.limite}&srid=${SRID}`
+        return this.instance.get(url)
+    }
+
+    async getAddressesByCEP(config) {
+        console.log('config', config)
+        const url = `/busca/enderecos/cep?cep=${config.cep}&srid=${SRID}`
+        return this.instance.get(url)
+    }
+
+    async getEstados(config) {
+        const url = `/estados?srid=${SRID}`
+        return this.instance.get(url)
+    }
+
+    async getMeso(config) {
+        const url = `mesos?estado_id=${config.estado_id}&srid=${SRID}`
         return this.instance.get(url)
     }
 }

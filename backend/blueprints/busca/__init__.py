@@ -34,7 +34,9 @@ def geocodificacao_lugares_filtro():
     if poligono_id != -1:
         locations = conn.execute(text("SELECT * FROM new_search_filtro_id_json(:nome, :poligono_id, :exato, :srid)").bindparams(nome=nome, poligono_id=poligono_id, exato=exato, srid=srid))
     elif meso!='' or estado != '':
-        locations = conn.execute(text("SELECT * FROM new_search_filtro_estado_meso_json(:nome, :estado, :meso, :exato, :srid)").bindparams(nome=nome, estado=estado, meso=meso, exato=exato, srid=srid))
+        locations = conn.execute(text("""SELECT _place_id as place_id, _name as name, _nota as nota, _point as point, _line as line, _area as area
+                                        FROM new_search_filtro_estado_meso_json(:nome, :estado, :meso, :exato, :srid)"""
+                                        ).bindparams(nome=nome, estado=estado, meso=meso, exato=exato, srid=srid))
     else:
         locations = conn.execute(text("SELECT * FROM new_search_json(:nome, :exato, :srid)").bindparams(nome=nome, exato=exato, srid=srid))
     db.close_db()
@@ -129,3 +131,28 @@ def geocodificacao_reversa_enderecos_cep():
                                 """).bindparams(latitude=lat, longitude=long, limite=limite, srid=srid))
     db.close_db()
     return jsonify([dict(row) for row in locations])
+
+
+@BLUEPRINT.route('/estados', methods=['GET'])
+def get_estados():
+    srid = request.args.get('srid', default=4674, type=int)
+    conn = db.get_db()
+    estados = conn.execute(text("""SELECT id_ibge as id, sigla, name
+                                    FROM backup.estados_br
+                                    ORDER BY name ASC
+    """))
+    db.close_db()
+    return jsonify([dict(row) for row in estados])
+
+@BLUEPRINT.route('/mesos', methods=['GET'])
+def get_mesos():
+    srid = request.args.get('srid', default=4674, type=int)
+    estado_id = request.args.get('estado_id', type=int)
+    conn = db.get_db()
+    mesos = conn.execute(text("""SELECT id, nomemeso
+                                FROM backup.mesorregioes_br
+                                WHERE uf = (:estado_id)::varchar
+                                ORDER BY nomemeso ASC
+    """).bindparams(estado_id=estado_id))
+    db.close_db()
+    return jsonify([dict(row) for row in mesos])
