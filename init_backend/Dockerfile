@@ -8,7 +8,7 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 5003
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "backend:backend"]
+CMD ["python3", "run_backend.py"]
 

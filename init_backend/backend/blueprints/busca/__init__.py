@@ -67,6 +67,7 @@ def geocodificacao_reversa_lugares():
 @BLUEPRINT.route('/busca/lugares', methods=['GET'])
 def geocodificacao_lugares_filtro():
     nome = request.args.get('nome', default='',type=str)
+    print("nome", nome)
     estado = request.args.get('estado', default='', type=str)
     meso = request.args.get('meso', default='', type=str)
     exato = request.args.get('exato', default=False, type=lambda v: v.lower() == 'true' or v.lower() == 't')
