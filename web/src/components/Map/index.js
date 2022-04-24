@@ -61,15 +61,19 @@ class Map extends Component {
     }
 
     addLocations() {
-        console.log('dentro de addLocations', this.props)
-        if (this.props.locations.response === undefined || this.props.locations.response.length === 0 || !this.map.current) {
-            console.log('locations vazio')
-            return
-        }
-            
+        console.log('dentro de addLocations', this.props)  
+
         this.currentMarkers.forEach((marker) => {
             marker.remove()
         })
+        if (this.props.locations.response === undefined || this.props.locations.response.length === 0 || !this.map.current) {
+            console.log('locations vazio')
+            this.map.current.setCenter([0, 30])
+            this.map.current.setZoom(1)
+            return
+        }
+            
+
         var bounds = new mapboxgl.LngLatBounds();
         console.log()
         switch (this.props.locations.type) {
@@ -87,6 +91,45 @@ class Map extends Component {
                                     <p><b>Número:</b> ${end.numero}</p>
                                     <p><b>Bairro:</b> ${end.bairro || 'null'}</p>
                                     <p><b>Cidade:</b> ${end.cidade}</p>
+                                    `
+                                )
+                        )
+                        .addTo(this.map.current)
+                    this.currentMarkers.push(newMarker)
+                }))
+            
+            case "Endereços Reversa":
+                this.props.locations.response.forEach((end => {
+                    bounds.extend(end.geom_json.coordinates)
+                    const newMarker = new mapboxgl.Marker()
+                        .setLngLat(end.geom_json.coordinates)
+                        .setPopup(
+                            new mapboxgl.Popup({ offset: 25 })
+                                .setHTML(
+                                    ` <div style="max-height: 200px; overflow: scroll;">
+                                    <p><b>Id:</b> ${end.id}</p>
+                                    <p><b>Tipo Logradouro:</b> ${end.tipo_logra}</p>
+                                    <p><b>Nome do Logradouro:</b> ${end.nome_logra}</p>
+                                    <p><b>Número:</b> ${end.numero}</p>
+                                    <p><b>Bairro:</b> ${end.bairro || 'null'}</p>
+                                    <p><b>Cidade:</b> ${end.cidade}</p>
+                                    <p><b>Tipo:</b> ${end.tipo}</p>
+                                    <p><b>Microrregião:</b> ${end.mg_microrregiao}</p>
+                                    <p><b>Mesorregião:</b> ${end.mg_mesorregiao}</p>
+                                    <p><b>Macrorregião:</b> ${end.mg_macrorregiao_2020}</p>
+                                    <p><b>Região Geográfica Intermadiária:</b> ${end.mg_regiao_geografica_intermediaria}</p>
+                                    <p><b>Região Geográfica Imediata:</b> ${end.mg_regiao_geografica_imediata}</p>
+                                    <p><b>Polo Saúde:</b> ${end.mg_saude_polo}</p>
+                                    <p><b>Bacia:</b> ${end.mpmg_bacias}</p>
+                                    <p><b>Cimos:</b> ${end.mpmg_cimos}</p>
+                                    <p><b>Comarca:</b> ${end.mpmg_comarca}</p>
+                                    <p><b>CRDS:</b> ${end.mpmg_crds}</p>
+                                    <p><b>CREDCA:</b> ${end.mpmg_credca}</p>
+                                    <p><b>RISP:</b> ${end.risp}</p>
+                                    <p><b>RISP ACISP:</b> ${end.risp_acisp}</p>
+                                    <p><b>RISP AISP:</b> ${end.risp_aisp}</p>
+                                    <p><b>RISP Região:</b> ${end.risp_regiao}</p>
+                                    </div>
                                     `
                                 )
                         )
@@ -126,9 +169,27 @@ class Map extends Component {
                         .setPopup(
                             new mapboxgl.Popup({ offset: 25 })
                                 .setHTML(
-                                    `<p><b>Id:</b> ${plc.place_id}</p>
+                                    `
+                                    <div style="max-height: 200px; overflow: scroll;">
+                                    <p><b>Id:</b> ${plc.place_id}</p>
                                     <p><b>Nome:</b> ${plc.nome}</p>
                                     <p><b>Tipo:</b> ${plc.tipo}</p>
+                                    <p><b>Microrregião:</b> ${plc.mg_microrregiao}</p>
+                                    <p><b>Mesorregião:</b> ${plc.mg_mesorregiao}</p>
+                                    <p><b>Macrorregião:</b> ${plc.mg_macrorregiao_2020}</p>
+                                    <p><b>Região Geográfica Intermadiária:</b> ${plc.mg_regiao_geografica_intermediaria}</p>
+                                    <p><b>Região Geográfica Imediata:</b> ${plc.mg_regiao_geografica_imediata}</p>
+                                    <p><b>Polo Saúde:</b> ${plc.mg_saude_polo}</p>
+                                    <p><b>Bacia:</b> ${plc.mpmg_bacias}</p>
+                                    <p><b>Cimos:</b> ${plc.mpmg_cimos}</p>
+                                    <p><b>Comarca:</b> ${plc.mpmg_comarca}</p>
+                                    <p><b>CRDS:</b> ${plc.mpmg_crds}</p>
+                                    <p><b>CREDCA:</b> ${plc.mpmg_credca}</p>
+                                    <p><b>RISP:</b> ${plc.risp}</p>
+                                    <p><b>RISP ACISP:</b> ${plc.risp_acisp}</p>
+                                    <p><b>RISP AISP:</b> ${plc.risp_aisp}</p>
+                                    <p><b>RISP Região:</b> ${plc.risp_regiao}</p>
+                                    </div>
                                     `
                                 )
                         )
@@ -161,8 +222,8 @@ class Map extends Component {
 
     render() {
         return (
-            <div style={{ height: "100%" }}>
-                <div id="mapContainer" className="map-container" style={{ height: "600px" }}></div>
+            <div class="row" style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <div id="mapContainer" className="map-container" style={{ height: "600px", width: "80%" }}></div>
             </div >
         )
     }

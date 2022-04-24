@@ -1,6 +1,8 @@
 import Map from '../../../Map'
 import ApiClient from '../../../../clients/api'
 import { Component } from "react"
+import '../../../Pages/styles.css'
+import Select from 'react-select';
 
 class ReverseGeocoding extends Component {
     constructor(props) {
@@ -13,12 +15,16 @@ class ReverseGeocoding extends Component {
             limite: 5,
             type: "Endereços"
         }
+        this.typeOptions = [
+            { value: 'Endereços Reversa', label: 'Endereços' },
+            { value: 'Lugares', label: 'Lugares' }
+        ]
     }
 
     handleSubmit = async (e) => {
         e.preventDefault();
         let response = []
-        if (this.state.type === "Endereços") {
+        if (this.state.type === "Endereços Reversa") {
             console.log(this.state.type, "Endereços", this.state.type === "Endereços")
             response = await this.apiClient.getAddressReverseGeocoding({
                 "lat": this.state.latitude,
@@ -49,65 +55,63 @@ class ReverseGeocoding extends Component {
     }
     render() {
         return (
-            <div>
-                <form name="Geoform" onSubmit={this.handleSubmit}>
+            <div className='page'>
+                <form name="form" class="form" onSubmit={this.handleSubmit}>
+                    <div class="form-inline">
+                        <div class="input input-type">
+                            <Select
+                                style={{ maxWidth: '100%' }}
+                                onChange={e => this.setState({ type: e.value }, () => console.log('setando type', this.state.type))}
+                                options={this.typeOptions}
+                                defaultOptions
+                                cacheOptions
 
-                    <div className="input-group">
-                        <div className="input-type">
-                            {/* <input
-                                list="types"
-                                // name="types"
-                                // id="types"
-                                // required
-                                value={this.state.type}
-                                onChange={e => this.setState({ type: e.target.value })}
                             />
-                            <datalist id="types">
-                                <option value="Endereços" defaultChecked />
-                                <option value="Lugares" />
-                            </datalist> */}
-                            <select name="types" id="types" onChange={e => this.setState({ type: e.target.value }, () => console.log('setando type', this.state.type))} value={this.state.type}>
-                                <option value="Endereços">Endereços</option>
-                                <option value="Lugares">Lugares</option>
-                            </select>
 
                         </div>
-                        <div className="input-lat">
+                        <div class=" input input-lat">
                             <input
+                                style={{ maxWidth: '100%' }}
                                 type="number"
                                 name="lat"
                                 id="lat"
+                                class="form-control"
                                 required
                                 placeholder="Latitude"
                                 value={this.state.latitude}
                                 onChange={e => this.setState({ latitude: Number(e.target.value) })}
                             />
                         </div>
-                        <div className="input-long">
+                        <div class=" input input-long">
                             <input
+                                style={{ maxWidth: '100%' }}
                                 type="number"
                                 name="long"
                                 id="long"
+                                class="form-control"
                                 required
                                 placeholder="Longitude"
                                 value={this.state.longitude}
                                 onChange={e => this.setState({ longitude: Number(e.target.value) })}
                             />
                         </div>
-                        <div className="input-limite">
+                        <div class=" input input-limite">
                             <input
+                                style={{ maxWidth: '100%' }}
                                 type="number"
                                 min="1" step="1"
                                 name="limite"
                                 id="limite"
+                                class="form-control"
                                 required
                                 placeholder="Limite"
                                 value={this.state.limite}
                                 onChange={e => this.setState({ limite: Number(e.target.value) })}
                             />
                         </div>
+                        <button class="input btn" type="submit">Buscar</button>
                     </div>
-                    <button type="submit">Buscar</button>
+
                 </form>
 
                 <Map id="mapContainer"

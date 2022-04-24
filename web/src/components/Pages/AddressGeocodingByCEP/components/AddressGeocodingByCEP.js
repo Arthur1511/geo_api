@@ -1,6 +1,7 @@
 import Map from '../../../Map'
 import ApiClient from '../../../../clients/api'
 import { Component } from "react"
+import '../../../Pages/styles.css'
 
 class AddressGeocodingByCEP extends Component {
     constructor(props) {
@@ -31,23 +32,25 @@ class AddressGeocodingByCEP extends Component {
 
     render() {
         return (
-            <div>
-                <form name="form" onSubmit={this.handleSubmit}>
+            <div className='page'>
+                <form name="form" class="form" onSubmit={this.handleSubmit}>
 
-                    <div className="input-group">
-                        <div className="input-cep">
+                    <div class="form-inline ">
+                        <div class="input">
                             <input
                                 type="text"
                                 name="cep"
+                                class="form-control"
                                 id="cepInput"
                                 required
-                                placeholder="CEP"
+                                placeholder="Insira o CEP"
                                 value={this.state.cep}
                                 onChange={e => this.setState({ cep: e.target.value })}
                             />
                         </div>
+                        <button class="input btn" type="submit">Buscar</button>
                     </div>
-                    <button type="submit">Buscar</button>
+
                 </form>
 
                 <Map id="mapContainer"

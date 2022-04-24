@@ -1,11 +1,19 @@
-div .Map {
-    display: flex;
+div .map-container {
+    /* display: flex; */
     justify-content: center;
     align-items: center;
     margin: 10pt;
+    height: "600px";
+    /* width: "1000px"; */
+    /* padding-right: "10%" ;
+    padding-left: "10%" */
 }
 
 p{
     text-align:left;
     margin: 1px;
+}
+
+.mapboxgl-ctrl-icon{
+    margin-left: 0;
 }

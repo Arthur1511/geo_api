@@ -14,7 +14,49 @@ def geocodificacao_reversa_lugares():
     limite = request.args.get('limite', default=10, type=int)
     srid = request.args.get('srid', default=4674, type=int)
     conn = db.get_db()
-    locations = conn.execute(text("""SELECT * FROM geodata.place_reverse_geocoding(:latitude, :longitude, :limite, :srid);
+    locations = conn.execute(text("""
+                                		SELECT  q.place_id, q.name as nome, q.objeto,q.description as tipo, q.distancia as distancia_km, 
+	(SELECT d.regiao::text FROM divisoes_mp.risp_regiao d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as risp_regiao,
+	(SELECT d.aisp::text FROM divisoes_mp.risp_aisp d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as risp_aisp,
+	(SELECT d.acisp::text FROM divisoes_mp.risp_acisp d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as risp_acisp,
+	(SELECT d.risp::text FROM divisoes_mp.risp d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as risp,
+	(SELECT d.orgaoapoio::text FROM divisoes_mp.mpmg_credca d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mpmg_credca,
+	(SELECT d.crds::text FROM divisoes_mp.mpmg_crds d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mpmg_crds,
+	(SELECT d.comarca::text FROM divisoes_mp.mpmg_comarca d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mpmg_comarca,
+	(SELECT d.cimos_nome::text FROM divisoes_mp.mpmg_cimos d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mpmg_cimos,
+	(SELECT d.bacias::text FROM divisoes_mp.mpmg_bacias d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mpmg_bacias,
+	(SELECT d.nomepolo::text FROM divisoes_mp.mg_saude_polo d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_saude_polo,
+	(SELECT d.nm_rgint::text FROM divisoes_mp.mg_regiao_geografica_intermediaria d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_regiao_geografica_intermediaria,
+	(SELECT d.nm_rgi::text FROM divisoes_mp.mg_regiao_geografica_imediata d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_regiao_geografica_imediata,
+	(SELECT d.nm_mun::text FROM divisoes_mp.mg_municipio_ibge_2020 d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_municipio_ibge_2020,
+	(SELECT d.nm_micro::text FROM divisoes_mp.mg_microrregiao d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_microrregiao,
+	(SELECT d.nm_meso::text FROM divisoes_mp.mg_mesorregiao d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_mesorregiao,
+	(SELECT d.macroreg::text FROM divisoes_mp.mg_macrorregiao_2020 d WHERE ST_WITHIN(q.geom, d.geom) LIMIT 1) as mg_macrorregiao_2020
+
+	FROM (SELECT p.place_id, n.name, description, 
+				CASE WHEN p.point is not null THEN ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:longitude, :latitude), :srid), 4674)::geography, 
+													  p.point::geography)/1000
+					 WHEN p.line is not null THEN ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:longitude, :latitude), :srid), 4674)::geography, 
+													  p.line::geography)/1000
+				   END AS distancia,
+			   CASE
+				WHEN p.point is not null THEN ST_AsGeoJSON(ST_TRANSFORM(p.point, :srid))::json
+				WHEN p.line is not null THEN ST_AsGeoJSON(ST_TRANSFORM(p.line, :srid))::json
+			   END AS objeto,
+		  	   CASE
+				WHEN p.point is not null THEN p.point
+				WHEN p.line is not null THEN p.line
+			   END AS geom
+	       FROM  geodata.place p, geodata.place_name pn, geodata.name n, geodata.type t
+	 	   WHERE p.place_id = pn.place_place_id 
+			  AND pn.name_name_id = n.name_id
+			  AND n.is_alternative = false
+			  AND t.type_id = p.type_type_id
+	) as q
+	WHERE distancia is not null
+		  AND distancia <  5  
+	ORDER BY distancia ASC
+	LIMIT :limite;
                                 """).bindparams(latitude=lat, longitude=long, limite=limite, srid=srid))
     db.close_db()
     return jsonify([dict(row) for row in locations])
@@ -107,8 +149,30 @@ def geocodificacao_reversa_enderecos():
     limite = request.args.get('limite', default=10, type=int)
     srid = request.args.get('srid', default=4674, type=int)
     conn = db.get_db()
-    locations = conn.execute(text("""SELECT * FROM geodata.address_reverse_geocoding(:lat, :long, :limite, :srid)
-                                """).bindparams(lat=lat, long=long, limite=limite, srid=srid))
+    locations = conn.execute(text("""SELECT *,ST_Transform(e.geom,:_srid)::json as geom_json,
+           ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:_long, :_lat), :_srid), 4674)::geography, 
+               e.geom::geography)/1000 AS distancia_km,
+    		(SELECT d.regiao::text FROM divisoes_mp.risp_regiao d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as risp_regiao,
+			(SELECT d.aisp::text FROM divisoes_mp.risp_aisp d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as risp_aisp,
+			(SELECT d.acisp::text FROM divisoes_mp.risp_acisp d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as risp_acisp,
+			(SELECT d.risp::text FROM divisoes_mp.risp d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as risp,
+			(SELECT d.orgaoapoio::text FROM divisoes_mp.mpmg_credca d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mpmg_credca,
+			(SELECT d.crds::text FROM divisoes_mp.mpmg_crds d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mpmg_crds,
+			(SELECT d.comarca::text FROM divisoes_mp.mpmg_comarca d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mpmg_comarca,
+			(SELECT d.cimos_nome::text FROM divisoes_mp.mpmg_cimos d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mpmg_cimos,
+			(SELECT d.bacias::text FROM divisoes_mp.mpmg_bacias d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mpmg_bacias,
+			(SELECT d.nomepolo::text FROM divisoes_mp.mg_saude_polo d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_saude_polo,
+			(SELECT d.nm_rgint::text FROM divisoes_mp.mg_regiao_geografica_intermediaria d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_regiao_geografica_intermediaria,
+			(SELECT d.nm_rgi::text FROM divisoes_mp.mg_regiao_geografica_imediata d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_regiao_geografica_imediata,
+			(SELECT d.nm_mun::text FROM divisoes_mp.mg_municipio_ibge_2020 d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_municipio_ibge_2020,
+			(SELECT d.nm_micro::text FROM divisoes_mp.mg_microrregiao d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_microrregiao,
+			(SELECT d.nm_meso::text FROM divisoes_mp.mg_mesorregiao d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_mesorregiao,
+			(SELECT d.macroreg::text FROM divisoes_mp.mg_macrorregiao_2020 d WHERE ST_WITHIN(e.geom, d.geom) LIMIT 1) as mg_macrorregiao_2020
+	FROM geodata.endereco e
+    WHERE ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:_long, :_lat), :_srid), 4674)::geography, 
+               e.geom::geography)/1000 < 5
+    ORDER BY distancia_km ASC
+    limit :_limite;""").bindparams(_lat=lat, _long=long, _limite=limite, _srid=srid))
     db.close_db()
     return jsonify([dict(row) for row in locations])
 
@@ -125,6 +189,8 @@ def geocodificacao_reversa_enderecos_cep():
                                     MIN(ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:longitude, :latitude), :srid), 4674)::geography, 
                                                 geom::geography)/1000 ) AS Distance
                             FROM geodata.endereco
+                            WHERE MIN(ST_Distance(ST_Transform(ST_SetSRID(ST_Point(:longitude, :latitude), :srid), 4674)::geography, 
+                                                geom::geography)/1000 ) < 5
                             GROUP BY cep
                             ORDER BY Distance ASC
                             limit :limite

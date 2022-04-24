@@ -1,6 +1,7 @@
 import Map from '../../../Map'
 import ApiClient from '../../../../clients/api'
 import { Component } from "react"
+import '../../../Pages/styles.css'
 
 class AddressGeocoding extends Component {
     constructor(props) {
@@ -23,31 +24,35 @@ class AddressGeocoding extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await this.apiClient.getAddressGeocoding({ "end": this.setState.address });
+        const response = await this.apiClient.getAddressGeocoding({ "end": this.state.address });
         console.log('response', response)
         this.setState({ locations: response.data })
-        this.setState({ address: this.currentAddress })
     }
 
     render() {
         return (
-            <div>
-                <form name="form" onSubmit={this.handleSubmit}>
+            <div class='page'>
 
-                    <div className="input-group">
-                        <div className="input-name">
+                <form class="form" name="form" onSubmit={this.handleSubmit}>
+
+                    <div class="form-inline ">
+                        <div class="input input-address">
+                            {/* <label for="address" class='label'>Endereço</label> */}
                             <input
+                                style={{ width: '100%' }}
+                                class="form-control"
                                 type="text"
                                 name="address"
                                 id="addressInput"
                                 required
-                                placeholder="Endereço"
+                                placeholder="Insira o endereço completo"
                                 value={this.state.address}
                                 onChange={e => this.setState({ address: e.target.value })}
                             />
                         </div>
+                        <button class="input btn" type="submit">Buscar</button>
                     </div>
-                    <button type="submit">Buscar</button>
+
                 </form>
 
                 <Map id="mapContainer"

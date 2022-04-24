@@ -52,6 +52,12 @@ class ApiClient {
         return this.instance.get(url)
     }
 
+    async getAddressGeocodingStructured(config) {
+        console.log('config', config)
+        const url = `/busca/enderecos/estruturado?nome=${config.nome}&numero=${config.numero}&cidade=${config.cidade}&estado=${config.estado}&exato=False&threahold=0.8&srid=${SRID}`
+        return this.instance.get(url)
+    }
+
     async getPlaceReverseGeocoding(config) {
         console.log('config', config)
         const url = `/busca/lugares/geocodificacao_reversa?lat=${config.lat}&long=${config.long}&limite=${config.limite}&srid=${SRID}`

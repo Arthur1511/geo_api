@@ -2,6 +2,8 @@ import Map from '../../../Map'
 import ApiClient from '../../../../clients/api'
 import { Component } from "react"
 import AsyncSelect from 'react-select/async';
+import '../../../Pages/styles.css'
+import '../../../../App.css'
 
 class AddressGeocoding extends Component {
     constructor(props) {
@@ -67,12 +69,14 @@ class AddressGeocoding extends Component {
     }
     render() {
         return (
-            <div>
-                <form name="Geoform" onSubmit={this.handleSubmit}>
+            <div class='page'>
+                <form name="form" class="form" onSubmit={this.handleSubmit}>
 
-                    <div className="input-group">
-                        <div className="input-name">
+                    <div class="form-inline " >
+                        <div class='input'>
+                            {/* <label for="name" class='label'>Nome do lugar</label> */}
                             <input
+                                class='form-control'
                                 type="text"
                                 name="name"
                                 id="name"
@@ -82,30 +86,35 @@ class AddressGeocoding extends Component {
                                 onChange={(e) => this.setState({ name: e.target.value })}
                             />
                         </div>
-                        <div className="input-state">
+                        <div class='input input-select'>
+                            {/* <label for='stateSelection'>Selecione o estado</label> */}
                             <AsyncSelect
                                 name="stateSelection"
                                 id="stateSelection"
+                                placeholder="Selecione o estado"
                                 loadOptions={this.getStatesSelectOptions}
                                 onChange={e => this.setState({ selectedState: e }, () => { })}
                                 defaultOptions
                                 cacheOptions
                             />
                         </div>
-                        <div className="input-meso">
+                        <div class='input input-select'>
+                            {/* <label for='mesoSelection'>Selecione a mesorregião</label> */}
                             <AsyncSelect
                                 key={this.state.selectedState.value}
                                 name="mesoSelection"
                                 id="mesoSelection"
+                                placeholder="Selecione a mesorregião"
                                 loadOptions={this.getMesosSelectOptions}
                                 onChange={e => this.setState({ selectedMeso: e })}
                                 defaultOptions
                                 cacheOptions
                             />
                         </div>
+                        <button class="input btn" type="submit">Buscar</button>
                     </div>
 
-                    <button type="submit">Buscar</button>
+
                 </form>
 
                 <Map id="mapContainer"
