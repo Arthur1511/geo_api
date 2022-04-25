@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  geo-api-backend:
+    build: .
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      POSTGRES_BD: gazetteer
+      POSTGRES_PASSWORD: 12345
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    container_name: geo-api-backend
+
+  postgres:
+    image: postgis/postgis
+    restart: always
+    environment:
+      POSTGRES_BD: gazetteer
+      POSTGRES_PASSWORD: 12345 #TODO: colocar em variável de ambiente
+
+    volumes:
+      # dados disponívels em 'var/lib/postgresql/data' estarão disponíveis em './postgres-data'
+      - ./postgres-data:/var/lib/postgresql/data
+    container_name: postgres
+
+
+    

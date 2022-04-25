@@ -16,6 +16,7 @@ def create_app():
     app = Flask(__name__)
 
     app.config['DATABASE'] = "postgresql://postgres:12345@localhost/gazetteer"
+    # talvez substituir 'localhost' por '5432'
     CORS(app)
 
     app.register_blueprint(busca.BLUEPRINT)
