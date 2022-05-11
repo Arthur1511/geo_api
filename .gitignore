@@ -1,4 +1,4 @@
 .flaskenv/
 .vscode/
 init_backend/backend/__pycache__
-#/db/init/init.sql
+/db/init/init.sql
