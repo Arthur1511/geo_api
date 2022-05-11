@@ -16,6 +16,7 @@ class ApiClient {
         const APPLICATION_JSON_MIME_TYPE = 'application/json'
 
         this.instance = axios.create({
+            //baseURL: 'http://geo-api-backend:5003',
             baseURL: 'http://localhost:5003',
             timeout: API_CLIENT_TIMEOUT,
             headers: {

@@ -1,0 +1,51 @@
+version: "3"
+
+services:
+
+  postgres:
+    build:
+      context: ./db/init
+      dockerfile: Dockerfile
+    #image: postgis/postgis
+    restart: always
+    environment:
+      POSTGRES_BD: gazetteer
+      POSTGRES_PASSWORD: 12345 #TODO: colocar em variável de ambiente
+    ports:
+      - '5432:5432'
+    volumes:
+      # dados disponívels em 'var/lib/postgresql/data' estarão disponíveis em './postgres-data'
+      - './db/init:/docker-entrypoint-initdb.d/'
+    container_name: postgres
+    
+  geo-api-backend:
+    build: 
+      context: ./init_backend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5003:5003"
+    environment:
+      POSTGRES_BD: gazetteer
+      POSTGRES_PASSWORD: 12345
+    links:
+      - postgres
+    depends_on:
+      - postgres
+    container_name: geo-api-backend
+
+  geo-api-frontend:
+    container_name: geo-api-frontend
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    volumes:
+      - './web:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - '3000:3000'
+    depends_on:
+      - "geo-api-backend"
+
+
+    
