@@ -9,7 +9,7 @@ class AddressGeocoding extends Component {
         this.apiClient = new ApiClient()
         this.state = {
             locations: [],
-            address: "",
+            addresses: ["",],
             type: "Endereços",
             clickedLat: "",
             clickedLong: ""
@@ -24,9 +24,25 @@ class AddressGeocoding extends Component {
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await this.apiClient.getAddressGeocoding({ "end": this.state.address });
+        let response = await Promise.all(this.state.addresses.map(async (address) => {
+            try {
+                const result = await this.apiClient.getAddressGeocoding({ "end": address });
+                return result.data;
+            }
+            catch (error) {
+
+            }
+        }));
+        response = response.flat();
         console.log('response', response)
-        this.setState({ locations: response.data })
+        this.setState({ locations: response })
+    }
+
+    clickAddAddr() {
+        let new_addresses = this.state.addresses.slice()
+        new_addresses.push("")
+        this.setState({ addresses: new_addresses })
+        console.log(this.state.addresses)
     }
 
     render() {
@@ -35,23 +51,32 @@ class AddressGeocoding extends Component {
 
                 <form class="form" name="form" onSubmit={this.handleSubmit}>
 
-                    <div class="form-inline ">
-                        <div class="input input-address">
-                            {/* <label for="address" class='label'>Endereço</label> */}
-                            <input
+                    {/* <label for="address" class='label'>Endereço</label> */}
+                    {this.state.addresses.map((address, index) => (
+                        <div class="form-inline ">
+                            <div class="input input-address">
+                                <input
                                 style={{ width: '100%' }}
+                                    key={index}
                                 class="form-control"
                                 type="text"
-                                name="address"
-                                id="addressInput"
+                                    name={"address" + index}
                                 required
                                 placeholder="Insira o endereço completo"
-                                value={this.state.address}
-                                onChange={e => this.setState({ address: e.target.value })}
-                            />
+                                    value={address}
+                                    onChange={e => {
+                                        let new_addresses = this.state.addresses.slice()
+                                        new_addresses[index] = e.target.value
+                                        this.setState({ addresses: new_addresses })
+                                    }
+                                    }
+                                />
+                            </div>
                         </div>
-                        <button class="input btn" type="submit">Buscar</button>
-                    </div>
+                    )
+                    )}
+                    <button class="input btn add" type="button" onClick={() => this.clickAddAddr()}>Adicionar Endereço</button>
+                    <button class="input btn" type="submit">Buscar</button>
 
                 </form>
 

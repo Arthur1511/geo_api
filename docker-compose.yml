@@ -12,11 +12,14 @@ services:
       POSTGRES_BD: gazetteer
       POSTGRES_PASSWORD: 12345 #TODO: colocar em variável de ambiente
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       # dados disponívels em 'var/lib/postgresql/data' estarão disponíveis em './postgres-data'
       - './db/init:/docker-entrypoint-initdb.d/'
     container_name: postgres
+    #command: [sh, -c, docker, exec, -it, postgres, sh, -c, "psql -U postgres -d gazetteer --command 'refresh materialized view geodata.municipio_mg; refresh materialized view geodata.bairro_bh; refresh materialized view geodata.logradouro_mg;'"]
+
+    #["./db/init/start.sh"]
     
   geo-api-backend:
     build: 

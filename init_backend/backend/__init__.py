@@ -14,7 +14,6 @@ from flask_cors import CORS
 def create_app():
 
     app = Flask(__name__)
-    #postgres:5432 é o nome do serviço no docker-compose e a porta
     app.config['DATABASE'] = "postgresql://postgres:12345@postgres:5432/gazetteer"
     app.config['DEBUG'] = True
     CORS(app)

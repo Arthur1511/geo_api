@@ -97,7 +97,7 @@ class Map extends Component {
                         .addTo(this.map.current)
                     this.currentMarkers.push(newMarker)
                 }))
-            
+                break
             case "Endereços Reversa":
                 this.props.locations.response.forEach((end => {
                     bounds.extend(end.geom_json.coordinates)

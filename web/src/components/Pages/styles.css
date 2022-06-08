@@ -42,6 +42,7 @@ div .input-group div .input-group button {
 
 .input-address{
     width: 500px;
+    margin-bottom: 5px;
 }
 
 .input-type{
@@ -58,8 +59,12 @@ div .input-group div .input-group button {
 
 .btn{
     max-width: 80px;
+    margin: 5px;
 }
 
+.add{
+    max-width: 160px;
+}
 
 
 .form-inline{

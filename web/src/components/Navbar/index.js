@@ -1,13 +1,10 @@
-import { FaBars } from 'react-icons/fa'
 import { Link } from 'react-router-dom';
-import { AiOutlineClose } from 'react-icons/ai'
 import React, { useState } from 'react'
 import { NavbarData } from './data'
 import './styles.css'
 
 function Navbar() {
-    const [sidebar, setSidebar] = useState(false)
-    const showSidebar = () => setSidebar(!sidebar)
+    const [sidebar] = useState(false)
 
     return (
         <div className="nav-menu-container" >
